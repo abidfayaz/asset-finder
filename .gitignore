@@ -1,0 +1,35 @@
+# ---------------------------------------------------------------------------
+# Your settings and token - never let these reach GitHub
+# ---------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# ---------------------------------------------------------------------------
+# Made on your computer when you use the app
+# ---------------------------------------------------------------------------
+# The app's own Python space, created by "Setup Asset Finder.bat"
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Your search index and the record of what was read - built from YOUR files
+chroma_store*/
+index_status*.json
+*.json.tmp
+
+# Logs from setup and from the launcher, and the shortcut-offered note
+setup_log.txt
+app_log.txt
+.shortcut_offered
+
+# Your content, if you keep it inside this folder
+content/
+
+# Editor and tool settings
+.claude/
+.vscode/
+.idea/

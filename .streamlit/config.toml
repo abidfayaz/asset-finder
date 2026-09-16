@@ -1,0 +1,25 @@
+# Streamlit settings for this project.
+
+[browser]
+# Don't send anonymous usage statistics.
+gatherUsageStats = false
+
+[server]
+# Don't ask for an email address on first run (that prompt blocks startup).
+headless = true
+# Only this computer can open the app. Without this line, anyone on the same
+# network (office or cafe Wi-Fi) could open it, search your library and
+# download your files - there is no login. To share it on your network on
+# purpose, delete this line; see "Sharing with a team" in the README.
+address = "127.0.0.1"
+
+[theme]
+# Force the light look. Without this, anyone whose browser or Windows is set
+# to dark mode would see the app in dark colours.
+base = "light"
+# The single accent colour - buttons, links, highlights.
+primaryColor = "#4F46E5"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F5F6FC"
+textColor = "#1F2333"
+font = "sans serif"

@@ -1,0 +1,6 @@
+# Windows batch files must keep Windows line endings (CRLF). With Unix line
+# endings, Windows can misread them - labels and "goto" stop working - so a
+# double-click file could fail on someone else's computer. This makes sure
+# every copy, clone or ZIP download of these files has the right endings.
+*.bat text eol=crlf
+*.cmd text eol=crlf
