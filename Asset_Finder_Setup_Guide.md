@@ -35,6 +35,20 @@ When you finish this guide, you will have:
 
 ---
 
+## Who this is for
+
+If any of these sound familiar, Asset Finder is for you:
+
+- You have years of files piled up — decks, PDFs, images, videos — and you *know* something exists, but you cannot find it.
+- File names do not tell you what is inside, so you open file after file hoping to get lucky.
+- You have given up searching and rebuilt something that already existed.
+- Your content is private, and you do not want to upload it to a cloud service just to search it.
+- You have a large, growing library and no time to tag or organise it.
+
+Asset Finder reads what is *inside* your files and lets you find any of it by describing it in plain words — privately, on your own computer, without moving or renaming a thing. The more content you have, the more it helps.
+
+---
+
 ## 2. What you need before you start
 
 - **A Windows computer.** The double-click files are for Windows.
@@ -94,16 +108,25 @@ Unsloth Studio is a free program that runs AI models on your own computer.
 - Open a new chat in Unsloth, choose the model at the **top-left**, and send a
   message such as *hello*. If it replies, it is working.
 
-**Step 3.4 — Create a token and note the address**
-- In Unsloth, open **Settings → API** and **Create** a token (a kind of password).
-  Give it any name, set it to never expire, and copy it — it starts with
+**Step 3.4 — Turn on automatic model loading (important for pictures)**
+- In Unsloth, open **Settings → API**, and find the **"Model auto-switch"** area.
+- Turn ON both of these:
+  - **"Switch model by request"**
+  - **"Switch image and video model by request"**
+- These let the app load the right model automatically. **Without them, reading
+  pictures fails with a "No model loaded" error.** This one step saves a lot of
+  confusion later.
+
+**Step 3.5 — Create a token and note the address**
+- In Unsloth, still under **Settings → API**, **Create** a token (a kind of
+  password). Give it any name, set it to never expire, and copy it — it starts with
   `sk-unsloth-`. Keep it safe; you will paste it in Section 5.
 - The address the app uses is shown under **Settings → API → API monitor**, in the
   banner at the top (**Base URL**). It is usually `http://127.0.0.1:8888/v1`.
 - The model's exact name is shown in Unsloth's model list — for the 4B model it
   is `Qwen/Qwen3-VL-4B-Instruct-GGUF`.
 
-**Step 3.5 — Keep Unsloth open**
+**Step 3.6 — Keep Unsloth open**
 - Unsloth must be open whenever you use the Asset Finder. It is the engine.
 
 Now go to Section 5.
@@ -368,10 +391,11 @@ it, and that `LLM_API_KEY` is not empty.
 **"The model '…' was not found."** `LLM_MODEL` must match the name exactly as your
 model runner shows it. For Ollama, type `ollama list` in a command window.
 
-**Pictures fail with "the picture model returned an error".** For Unsloth, the
-model was probably downloaded without its vision (mmproj) file — download it with
-that file. Otherwise, the model runner may have stopped. Then press **Process the
-files** again: only the missing pictures are tried.
+**Pictures fail with "the picture model returned an error" or "No model loaded".**
+For Unsloth, check two things: (1) both auto-switch settings are ON (Section 3.4),
+and (2) the model was downloaded *with* its vision (mmproj) file (Section 3.2).
+Otherwise, the model runner may have stopped. Then press **Process the files**
+again: only the missing pictures are tried.
 
 **"Python is not installed on this computer."** Install it from python.org with
 **"Add python.exe to PATH"** ticked (Section 5.1), then run the setup again.
