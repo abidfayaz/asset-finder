@@ -743,6 +743,7 @@ def index_videos_only(limit: int = None, force: bool = False) -> dict:
         "chunks_indexed": 0,
         "skipped_files": [],
         "video_failures": [],
+        "video_list_error": None,
     }
 
     index_videos(collection, status, summary, force=force, limit=limit)
@@ -770,7 +771,17 @@ def index_videos(collection, status: dict, summary: dict,
     import links
     import transcripts
 
-    videos, _ = links.get_youtube_links()
+    try:
+        videos, _ = links.get_youtube_links()
+    except Exception as error:
+        # Usually the spreadsheet's column headings are wrong. Record it so the
+        # app can say so on screen - otherwise the videos would simply be
+        # missing, with the reason buried in the log.
+        summary["video_list_error"] = (
+            f"Your YouTube links could not be read. {error}")
+        print(f"\n  Could not read the link spreadsheet: {error}")
+        return
+
     if not videos:
         return
 
@@ -1140,6 +1151,7 @@ def index_assets(folder=None, force: bool = False, progress=None,
         "videos_failed": 0,
         "videos_unchanged": 0,
         "video_failures": [],
+        "video_list_error": None,   # e.g. the link spreadsheet's columns are wrong
         "chunks_indexed": 0,
         "failures": [],       # (file name, reason) - something actually broke
         "skipped_files": [],  # (file name, reason) - a type we do not handle

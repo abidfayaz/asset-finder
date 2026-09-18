@@ -507,6 +507,16 @@ def render_finished_message(job: dict) -> None:
         message = "Your library was replaced. " + message
     st.success(message)
 
+    # The files were processed, but the YouTube links were not - say so here
+    # rather than leaving the videos quietly missing.
+    if summary.get("video_list_error"):
+        st.warning(
+            f"{summary['video_list_error']}  \n"
+            f"Your files were processed normally - only the videos were "
+            f"skipped. Check the headings in your `public_links.xlsx`, then "
+            f"press **Process the files** again."
+        )
+
 
 @st.fragment(run_every=2)
 def render_progress() -> None:

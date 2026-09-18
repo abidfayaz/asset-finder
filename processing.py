@@ -181,6 +181,10 @@ def _merge(running_total: dict, batch: dict) -> dict:
         merged[name] = running_total.get(name, 0) + batch.get(name, 0)
     for name in _LISTS:
         merged[name] = list(running_total.get(name, [])) + list(batch.get(name, []))
+    # A problem with the link spreadsheet is worth keeping: batches that stop
+    # before reaching the videos never look at it and so never report it.
+    merged["video_list_error"] = (batch.get("video_list_error")
+                                  or running_total.get("video_list_error"))
     return merged
 
 

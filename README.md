@@ -62,6 +62,10 @@ has the memory for it (for example the 8B versions of the same models).
 
 ## Installing — once
 
+For a longer walkthrough of every step — choosing a model for your computer,
+Unsloth or Ollama, and sharing with a team — see the
+**[Setup Guide](Asset_Finder_Setup_Guide.md)**.
+
 1. **Download this project** (the green **Code** button → **Download ZIP**) and
    unzip it somewhere easy to find, such as your Documents folder.
 2. **Install your model runner and model** (table above). For Unsloth, also create
