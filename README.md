@@ -69,7 +69,9 @@ Unsloth or Ollama, and sharing with a team — see the
 1. **Download this project** (the green **Code** button → **Download ZIP**) and
    unzip it somewhere easy to find, such as your Documents folder.
 2. **Install your model runner and model** (table above). For Unsloth, also create
-   the token.
+   the token, and under **Settings → API → Model auto-switch** turn ON both
+   **"Switch model by request"** and **"Switch image and video model by
+   request"** — without them, reading pictures fails with "No model loaded".
 3. **Double-click `Setup Asset Finder.bat`.** A window walks through five steps in
    plain words:
    1. Checks Python and free disk space — and tells you where to get Python if it
@@ -219,10 +221,11 @@ and `LLM_API_KEY` in `.env` are set (the token must not be empty).
 **"The model '…' was not found."** `LLM_MODEL` must match the name exactly as your
 model runner shows it. For Ollama, type `ollama list`.
 
-**Pictures fail: "the picture model returned an error".** The model cannot read
-pictures — for Unsloth, it was downloaded without its vision (mmproj) file — or the
-model runner stopped. Fix it, then press **Process the files**: pictures already
-read are kept, and only the missing ones are tried again.
+**Pictures fail: "the picture model returned an error" or "No model loaded".** For
+Unsloth, check that both auto-switch settings are ON (**Settings → API → Model
+auto-switch**), and that the model was downloaded with its vision (mmproj) file.
+Otherwise, the model runner may have stopped. Fix it, then press **Process the
+files**: pictures already read are kept, and only the missing ones are tried again.
 
 **The app says the index was built with a different model.** You changed
 `EMBEDDING_MODEL`. Either change it back, or give `CHROMA_DIR` and `STATUS_FILE`
