@@ -245,6 +245,11 @@ Before you can search, the app reads your files once. This is called
   asks you to confirm. Your actual files are never touched.
 
 **Step 7.4 — YouTube videos (optional)**
+- **A sample `public_links.xlsx` is included — download it, replace the example
+  with your own video links, and put it in your content folder.** It is in the app
+  folder you downloaded, or on the GitHub page: click `public_links.xlsx`, then the
+  download button. It already has the right headings and one example row (YouTube's
+  first-ever video, which has captions — search *elephants* to try it).
 - Put a spreadsheet named exactly **`public_links.xlsx`** anywhere in your content
   folder (capital letters do not matter; it must be an `.xlsx` file).
 - Its **first sheet** needs a heading row with three columns, in any order:

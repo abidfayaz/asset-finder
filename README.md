@@ -162,6 +162,10 @@ with these three column headings:
 |---|---|---|
 | Star schema explained | https://www.youtube.com/watch?v=… | youtube |
 
+**A sample [`public_links.xlsx`](public_links.xlsx) is included** with the right
+headings and one example row — replace the example with your own video links and
+put it in your content folder.
+
 Rows marked `youtube` are read when you press **Process the files**. The app
 fetches each video's public captions (free, no account), so a search finds the
 passage where your topic is spoken, and the link opens the video at that moment.
