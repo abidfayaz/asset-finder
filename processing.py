@@ -125,8 +125,7 @@ def auto_check_on_open(folder) -> bool:
     Runs once per app start, in the background, and only when a library has
     already been processed - there is nothing to compare against otherwise, and
     reading a whole library for the first time should be a deliberate choice.
-    The YouTube list is left alone, so opening the app never reaches out to the
-    internet.
+    The YouTube list is left alone, so opening the app never fetches captions.
     """
     global _checked_on_open
     with _lock:

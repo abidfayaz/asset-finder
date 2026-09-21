@@ -178,8 +178,9 @@ Rows marked `youtube` are read when you press **Process the files**. The app
 fetches each video's public captions (free, no account), so a search finds the
 passage where your topic is spoken, and the link opens the video at that moment.
 
-- **This is the one thing that uses the internet:** captions are fetched from
-  YouTube. Opening the app never does.
+- **Captions are fetched from YouTube**, and only when you press **Process the
+  files** — the automatic check when the app opens never fetches them. See
+  *Privacy* for every time the app goes online.
 - Captions are spoken words only — a slide shown on screen but not described aloud
   is not searchable.
 - Only public videos with captions can be read; the others are listed in the
@@ -193,8 +194,9 @@ passage where your topic is spoken, and the link opens the video at that moment.
 
 - **Your files are only read.** Nothing is ever changed, moved, deleted or uploaded.
 - **Everything runs on your computer:** reading files, reading pictures, the search,
-  and the explanations. The internet is used only to download the libraries and
-  search model during setup, and to fetch YouTube captions if you list videos.
+  and the explanations. The app only goes online to download its parts during
+  setup, check its search model for updates when it starts, and fetch YouTube
+  captions if you list videos.
 - **Only this computer can open the app.** It is not reachable from other computers
   on your network unless you change that on purpose (see *Sharing with a team*).
 - **Your token stays in `.env`**, which is excluded from git and never shared.

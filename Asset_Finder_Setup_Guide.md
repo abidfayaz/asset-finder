@@ -27,8 +27,9 @@ Three promises:
 - **It never changes your files.** It only reads them. It never moves, renames,
   deletes or uploads anything.
 - **The AI runs on your own computer.** Your files and your searches are not sent
-  to any outside company. The internet is only used to download the app's parts
-  during setup, and to fetch YouTube captions if you list videos.
+  to any outside company. The app only goes online to download its parts during
+  setup, check its search model for updates when it starts, and fetch YouTube
+  captions if you list videos.
 - **Only your computer can open it**, unless you choose to share it on your network
   (Section 10).
 
@@ -397,6 +398,9 @@ images and YouTube videos, running fully on one computer:
   every time — 12 out of 12.
 - **4 searches for things not in the library:** it correctly found nothing every
   time — 4 out of 4.
+
+Word and Excel support was added after this test, so it is not part of these
+numbers; it was checked separately on a few test files.
 
 This was a focused test of the search itself, not a large scientific benchmark.
 On your own library, try a handful of searches where you know the right answer.
