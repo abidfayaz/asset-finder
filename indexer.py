@@ -27,6 +27,8 @@ import traceback
 from pathlib import Path
 
 import config
+import documents
+import links
 import vision
 
 # One "chunk" = one searchable piece of content. For a deck that is one slide;
@@ -36,7 +38,15 @@ import vision
 # File types this stage handles right now.
 PPTX_EXTENSIONS = {".pptx"}
 PDF_EXTENSIONS = {".pdf"}
+DOCX_EXTENSIONS = {".docx"}
+XLSX_EXTENSIONS = {".xlsx"}
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg"}
+
+# What each readable type is called in the record, and what its pieces are.
+FILE_TYPES = {".pptx": "deck", ".pdf": "pdf", ".docx": "document",
+              ".xlsx": "spreadsheet"}
+PIECE_WORDS = {"deck": "slides", "pdf": "pages", "document": "text",
+               "spreadsheet": "sheet text"}
 
 # A short breather between videos, so YouTube does not think we are a robot
 # hammering it. Fetching captions is quick, so this barely costs anything.
@@ -279,7 +289,9 @@ def scan_folder(folder) -> dict:
                     continue
                 files += 1
                 size += path.stat().st_size
-                if path.suffix.lower() in config.SUPPORTED_EXTENSIONS:
+                if (path.suffix.lower() in config.SUPPORTED_EXTENSIONS
+                        and not path.name.startswith("~$")
+                        and path.name.lower() != links.LINK_FILE_NAME):
                     readable += 1
             except OSError:
                 # A file that vanished or cannot be looked at - just skip it.
@@ -447,8 +459,22 @@ def describe_pptx_pictures(path: Path, remembered: dict,
     if not vision.is_configured():
         return [], 0, remembered, 0, 0
 
-    pictures = extract_pptx_pictures(path)
-    if not pictures:
+    return describe_pictures(extract_pptx_pictures(path), remembered, budget)
+
+
+def describe_pictures(pictures: list[dict], remembered: dict,
+                      budget: int = None) -> tuple[list[dict], int, dict, int]:
+    """
+    Send pictures pulled out of a file - a deck, a Word document or an Excel
+    workbook - to the vision model, and turn the answers into chunks. Same
+    rules for all three: remembered pictures are reused, DECORATIVE ones are
+    left out, and a picture that fails is counted rather than failing the file.
+
+    Each picture may carry its own "id_part" (its name inside the index),
+    "label" (the section or sheet it sits in) and "where" (for the log).
+    Returns the same as describe_pptx_pictures.
+    """
+    if not vision.is_configured() or not pictures:
         return [], 0, remembered, 0, 0
 
     memory = dict(remembered or {})
@@ -468,6 +494,7 @@ def describe_pptx_pictures(path: Path, remembered: dict,
 
     for position, picture in enumerate(pictures, start=1):
         fingerprint = picture["sha1"]
+        where = picture.get("where") or f"on slide {picture['number']}"
 
         if fingerprint in memory:
             description = memory[fingerprint]     # free: we did this already
@@ -481,13 +508,13 @@ def describe_pptx_pictures(path: Path, remembered: dict,
             except Exception as error:
                 unread += 1
                 used += 1
-                print(f"          picture on slide {picture['number']}: {error}")
+                print(f"          picture {where}: {error}")
                 time.sleep(vision.PAUSE_BETWEEN_IMAGES_SECONDS)
                 continue
             memory[fingerprint] = description
             used += 1
             read += 1
-            print(f"          read picture on slide {picture['number']}")
+            print(f"          read picture {where}")
             time.sleep(vision.PAUSE_BETWEEN_IMAGES_SECONDS)
 
         if not vision.is_decorative(description):
@@ -496,7 +523,9 @@ def describe_pptx_pictures(path: Path, remembered: dict,
                 "text": description,
                 # A slide can hold typed text AND several pictures, so each
                 # piece needs its own name inside the index.
-                "id_part": f"{picture['number']}-picture{position}",
+                "id_part": (picture.get("id_part")
+                            or f"{picture['number']}-picture{position}"),
+                "label": picture.get("label", ""),
                 "source": "picture",
             })
 
@@ -994,6 +1023,17 @@ def plain_failure_reason(error: Exception, file_type: str) -> str:
                     "is not really a PowerPoint file")
         return f"could not open this deck ({name})"
 
+    if file_type in ("document", "spreadsheet"):
+        kind = "Word document" if file_type == "document" else "Excel workbook"
+        # A password-protected Office file is not a zip folder at all, so it
+        # fails exactly like a damaged one.
+        if ("package not found" in text or "not a zip" in text
+                or "badzipfile" in name.lower() or "invalidfile" in name.lower()):
+            return (f"could not open this {kind} - it may be password-protected "
+                    f"or damaged, or saved in the older .doc/.xls format under "
+                    f"a new name")
+        return f"could not open this {kind} ({name})"
+
     if "permission" in text or isinstance(error, PermissionError):
         return "could not open the file - it may be open in another program"
 
@@ -1049,6 +1089,10 @@ def _store_chunks(collection, file_key: str, path, file_type: str,
         if chunk.get("start_seconds") is not None:
             # Videos only: where in the video this excerpt starts.
             extra["start_seconds"] = int(chunk["start_seconds"])
+        if chunk.get("label"):
+            # Word and Excel only: the heading or sheet name this piece sits
+            # under, shown on the result so you know where to look.
+            extra["section"] = str(chunk["label"])[:200]
         metadatas.append({
             **extra,
             "file_key": file_key,
@@ -1065,7 +1109,8 @@ def _store_chunks(collection, file_key: str, path, file_type: str,
             # such as onto a server running a different operating system.
             "rel_path": _relative_path(path, file_type),
             "type": file_type,
-            # For a deck this is the slide number; for a PDF the page number.
+            # For a deck this is the slide number; for a PDF the page number;
+            # for a Word document the piece number; for Excel the sheet number.
             "location": chunk["number"],
             # "text" = typed on the slide, "picture" = read from an image.
             "source": chunk.get("source", "text"),
@@ -1135,7 +1180,11 @@ def index_assets(folder=None, force: bool = False, progress=None,
     vision.reset_give_up_counter()
 
     # Every file in the folder and all sub-folders, in a predictable order.
-    all_files = sorted(p for p in folder.rglob("*") if p.is_file())
+    # Files starting with "~$" are the hidden stand-ins Word, Excel and
+    # PowerPoint create while a document is open - not content, and gone again
+    # once it is closed.
+    all_files = sorted(p for p in folder.rglob("*")
+                       if p.is_file() and not p.name.startswith("~$"))
 
     summary = {
         "total_files": len(all_files),
@@ -1220,6 +1269,26 @@ def index_assets(folder=None, force: bool = False, progress=None,
 
         summary["worked_on"].append(file_key)
 
+        # --- The YouTube link list ------------------------------------------
+        # An Excel file, but not content: it is the list the YouTube videos
+        # come from, read separately. Only other Excel files are read as
+        # content.
+        if path.name.lower() == links.LINK_FILE_NAME:
+            reason = "link list - read separately to find the YouTube videos"
+            status["files"][file_key] = {
+                "file_name": path.name,
+                "path": str(path),
+                "type": "xlsx",
+                "status": "skipped",
+                "reason": reason,
+                "chunks": 0,
+                "modified_time": modified,
+                "indexed_time": None,
+            }
+            summary["skipped_unsupported"] += 1
+            summary["skipped_files"].append((file_key, reason))
+            continue
+
         # --- Images: shown to the vision model ------------------------------
         if extension in IMAGE_EXTENSIONS:
             status["files"][file_key] = {
@@ -1284,13 +1353,8 @@ def index_assets(folder=None, force: bool = False, progress=None,
         # These are SKIPPED, not failed. Nothing is broken about a .zip - we
         # simply do not handle that type. Calling it a failure would suggest
         # the file needs fixing, which it does not.
-        if extension not in PPTX_EXTENSIONS | PDF_EXTENSIONS:
-            if path.name.lower() == "public_links.xlsx":
-                # Not indexed as a document, but far from ignored: this is the
-                # list the YouTube videos come from.
-                reason = "link list - read separately to find the YouTube videos"
-            else:
-                reason = f"unsupported file type ({extension or 'no extension'})"
+        if extension not in FILE_TYPES:
+            reason = f"unsupported file type ({extension or 'no extension'})"
             status["files"][file_key] = {
                 "file_name": path.name,
                 "path": str(path),
@@ -1306,7 +1370,7 @@ def index_assets(folder=None, force: bool = False, progress=None,
             continue
 
         # --- Mark as in-progress and save, so a crash mid-file is visible ---
-        file_type = "deck" if extension in PPTX_EXTENSIONS else "pdf"
+        file_type = FILE_TYPES[extension]
         status["files"][file_key] = {
             "file_name": path.name,
             "path": str(path),
@@ -1324,31 +1388,62 @@ def index_assets(folder=None, force: bool = False, progress=None,
             picture_chunks = []
             pictures_unread = 0
             picture_memory = None
-            if file_type == "deck":
-                # Pass one: the typed text on each slide. Free.
-                chunks = extract_pptx_chunks(path)
-                unit = "slides"
-                # Pass two: the pictures on each slide, which is what makes a
-                # screenshot-only slide findable. This one costs vision calls,
-                # so it runs second and only on files we are indexing anyway.
-                # Reuse anything we already learned about this deck's pictures
-                # on an earlier run, so a retry only pays for what is missing.
-                known = (previous or {}).get("picture_memory", {})
-                picture_chunks, pictures_unread, picture_memory, _used, _read = (
-                    describe_pptx_pictures(path, known))
-                chunks = chunks + picture_chunks
-            else:
+            notes = []
+            unit = PIECE_WORDS[file_type]
+            if file_type == "pdf":
                 chunks = extract_pdf_chunks(path)
-                unit = "pages"
+            else:
+                # Pass one: the typed text. Free and quick.
+                # Pass two: the pictures inside the file - screenshots on a
+                # slide, pasted into a Word document or placed on a sheet -
+                # which is what makes text inside a screenshot findable. This
+                # is the slow part, so it runs second.
+                if file_type == "deck":
+                    chunks = extract_pptx_chunks(path)
+                    pictures = (extract_pptx_pictures(path)
+                                if vision.is_configured() else [])
+                elif file_type == "document":
+                    chunks, pictures, notes = documents.extract_docx(
+                        path, MIN_PICTURE_SIDE)
+                else:
+                    chunks, pictures, notes = documents.extract_xlsx(
+                        path, MIN_PICTURE_SIDE)
+
+                # Reuse every picture already read - in this file on an earlier
+                # run, or anywhere else in the library - so a retry only reads
+                # what is missing and a screenshot pasted into three documents
+                # is read once.
+                known = dict(status.setdefault("picture_library", {}))
+                known.update((previous or {}).get("picture_memory") or {})
+                picture_chunks, pictures_unread, picture_memory, _used, _read = (
+                    describe_pictures(pictures, known))
+                if picture_memory:
+                    status["picture_library"].update(
+                        {sha1: text for sha1, text in picture_memory.items()
+                         if sha1 in {p["sha1"] for p in pictures}})
+                    # Only this file's own pictures are kept with the file.
+                    picture_memory = {p["sha1"]: picture_memory[p["sha1"]]
+                                      for p in pictures
+                                      if p["sha1"] in picture_memory}
+                chunks = chunks + picture_chunks
 
             if not chunks:
                 # The file opened fine but held nothing we could read.
                 if file_type == "pdf":
                     reason = ("no readable text - the PDF may be a scan or "
                               "made of images")
-                else:
+                elif file_type == "deck":
                     reason = ("nothing readable found - no text on any slide, "
                               "and no pictures we could describe")
+                elif file_type == "document":
+                    reason = ("nothing readable found - no text, and no "
+                              "pictures we could describe")
+                else:
+                    reason = ("nothing readable found - every sheet is empty, "
+                              "and there are no pictures we could describe")
+                if pictures_unread:
+                    reason += (f" ({pictures_unread} picture(s) could not be "
+                               f"read - is the model runner open?)")
                 raise ValueError(reason)
 
             stored = _store_chunks(collection, file_key, path, file_type,
@@ -1359,10 +1454,12 @@ def index_assets(folder=None, force: bool = False, progress=None,
             # so the next run comes back to it instead of skipping it as
             # finished. Without this, an interrupted run would look complete
             # for ever and those slides would stay unsearchable.
-            note = None
             if pictures_unread:
-                note = (f"{pictures_unread} picture(s) could not be read - "
-                        f"press Process the files again to retry them")
+                notes.insert(0, f"{pictures_unread} picture(s) could not be read "
+                                f"- press Process the files again to retry them")
+            # Anything worth knowing about a file that did work, e.g. drawings
+            # in a format the picture reader cannot open.
+            note = "; ".join(notes) or None
 
             status["files"][file_key].update({
                 "status": "processed",

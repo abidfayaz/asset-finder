@@ -1,6 +1,7 @@
 # Asset Finder
 
-Search your slide decks, PDFs, images and YouTube videos **by meaning** — in plain
+Search your slide decks, PDFs, Word and Excel files, images and YouTube videos
+**by meaning** — in plain
 words, not by file name — and see *why* each result matched.
 
 Type *"how do I write a data analyst resume"* and it finds the right PDF page, even
@@ -17,8 +18,10 @@ changed, moved, deleted or uploaded.
 ## What it does
 
 - **Reads inside your files:** the text on every slide of a PowerPoint deck, every
-  page of a PDF, what an image shows and any words printed in it, pictures and
-  screenshots inside slides, and the spoken words of YouTube videos.
+  page of a PDF, every section of a Word document (`.docx`), the cells of every
+  sheet in an Excel workbook (`.xlsx`), what an image shows and any words printed
+  in it, pictures and screenshots inside slides, Word documents and Excel sheets,
+  and the spoken words of YouTube videos.
 - **Searches by meaning.** Results come back best first, and **only genuine matches
   are shown**. An AI check removes anything that does not really relate to your
   search.
@@ -118,8 +121,8 @@ Your model runner must be open while you use the app.
 
 1. Open **Processing log** and paste the path of the folder that holds your files
    (in File Explorer, click the address bar and copy it). The app shows what it
-   found, for example *"84 files, 2.3 GB found – 60 of them are decks, PDFs or
-   images the app can read"*.
+   found, for example *"84 files, 2.3 GB found – 60 of them are decks, PDFs, Word
+   or Excel files or images the app can read"*.
 2. Press **Process the files**. A progress bar shows *"12 of 84 files done, 72
    remaining"* and which file is being read.
 
@@ -242,8 +245,8 @@ close the black window and start the app again.
 
 | Step | Done by | Where |
 |---|---|---|
-| Reading decks and PDFs | `python-pptx`, `pypdf` | your computer |
-| Reading images, and pictures inside slides | your vision model | your model runner, on your computer |
+| Reading decks, PDFs, Word and Excel files | `python-pptx`, `pypdf`, `python-docx`, `openpyxl` | your computer |
+| Reading images, and pictures inside slides, Word documents and Excel sheets | your vision model | your model runner, on your computer |
 | Reading YouTube videos | their public captions (`youtube-transcript-api`) | fetched from YouTube |
 | Turning text into searchable "meaning fingerprints" | `mixedbread-ai/mxbai-embed-large-v1` (`sentence-transformers`) | your computer |
 | Storing and searching them | ChromaDB | your computer |
@@ -261,6 +264,18 @@ misses from about 0.62. Every setting is explained in `.env.example`.
 
 - **Deck previews show the slide's text**, not a picture of the slide — rendering
   real slides needs PowerPoint or LibreOffice.
+- **Word results point at a heading, not a page.** Word files do not store pages,
+  so a document is split by heading into pieces of about 200 words — results show
+  e.g. *Section: Refund policy*, or *Part 3* in a document without headings.
+- **Excel works best for sheets that hold words.** A big table of numbers is found
+  by its sheet name and column headings, not by the figures. Formulas are read as
+  their last saved value, and very large sheets are capped at 200 pieces each.
+- **Some pictures in Word and Excel cannot be read:** drawings, SmartArt and some
+  charts stored as drawing instructions (EMF/WMF), and pictures placed *inside* a
+  cell with Excel's "Place in Cell". They are skipped, and the Processing log says so
+  for drawings.
+- **Older `.doc` and `.xls` files are not read** — only `.docx` and `.xlsx`.
+  `public_links.xlsx` is always treated as the YouTube list, never as content.
 - **Very long slides or pages are only partly represented** — the search model
   reads about the first 500 word-pieces of each.
 - **Changes are detected by a file's modified time.** A program that rewrites a
@@ -303,6 +318,7 @@ Command-line tools, all optional — the app's buttons do the same:
 |---|---|
 | `app.py` | The app: search page, Processing log, settings |
 | `indexer.py` | Reads files and builds the index |
+| `documents.py` | Reads Word and Excel files, and the pictures inside them |
 | `processing.py` | Runs processing in the background, in batches |
 | `search.py` | Searching, scoring and highlighting |
 | `llm.py` | "Why it matched" sentences and the related check |

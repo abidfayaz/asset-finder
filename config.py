@@ -122,4 +122,5 @@ CLOSEST_THRESHOLD = _float_setting("CLOSEST_THRESHOLD",
 
 # The only file types this app handles. Anything else is reported as
 # "unsupported" in the processing log rather than silently ignored.
-SUPPORTED_EXTENSIONS = {".pptx", ".pdf", ".png", ".jpg", ".jpeg"}
+SUPPORTED_EXTENSIONS = {".pptx", ".pdf", ".docx", ".xlsx",
+                        ".png", ".jpg", ".jpeg"}

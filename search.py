@@ -152,6 +152,14 @@ def location_label(result: dict) -> str:
         return f"Slide {result['location']}"
     if result["type"] == "pdf":
         return f"Page {result['location']}"
+    if result["type"] == "document":
+        # Word has no fixed pages, so point at the heading instead - or, in a
+        # document without headings, at which part from the top it is.
+        if result.get("section"):
+            return f"Section: {result['section']}"
+        return f"Part {result['location']}"
+    if result["type"] == "spreadsheet":
+        return f"Sheet: {result.get('section') or result['location']}"
     # Videos get no label. A transcript is cut into excerpts internally, but
     # "excerpt 4 of 13" means nothing to a viewer - the "Watch on YouTube from
     # 6:52" button already says where in the video the match is.
@@ -161,6 +169,7 @@ def location_label(result: dict) -> str:
 def type_label(file_type: str) -> str:
     """A tidy name for the file type, for showing on screen."""
     return {"deck": "Deck", "pdf": "PDF", "image": "Image",
+            "document": "Word document", "spreadsheet": "Excel workbook",
             # Spelled out, so it is obvious this is a video on the web and not
             # a file sitting in a folder.
             "youtube": "YouTube video"}.get(file_type, file_type.title())
@@ -312,6 +321,8 @@ def search(query: str, top_k: int = None, collection=None, model=None) -> list[d
             # For videos: the second where this excerpt starts. Missing for
             # videos indexed before start times were kept.
             "start_seconds": meta.get("start_seconds"),
+            # Word and Excel: the heading or sheet name the piece sits under.
+            "section": meta.get("section", ""),
             "text": text,
             "snippet": make_snippet(text),
             "similarity": similarity,

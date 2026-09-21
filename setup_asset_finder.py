@@ -44,7 +44,7 @@ LINE = "-" * 64
 
 # Every library the app loads - checked once installed, so a library that
 # installed but cannot actually be used is caught here, not on first search.
-LIBRARIES_TO_CHECK = ("streamlit", "dotenv", "pptx", "pypdf", "sentence_transformers",
+LIBRARIES_TO_CHECK = ("streamlit", "dotenv", "pptx", "pypdf", "docx", "sentence_transformers",
                       "chromadb", "requests", "PIL", "openpyxl",
                       "youtube_transcript_api")
 

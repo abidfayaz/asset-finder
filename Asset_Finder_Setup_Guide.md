@@ -10,7 +10,7 @@ Ollama. If a step feels unclear, that is a fault of the guide, not you.
 
 ## 1. What this is, and what you will end up with
 
-The Asset Finder lets you search your own content — slide decks, PDFs, images and
+The Asset Finder lets you search your own content — slide decks, PDFs, Word and Excel files, images and
 YouTube videos — by **meaning**, in plain words, instead of by file name.
 
 For example, you can type *"the slide that explains star schema"* and it finds that
@@ -55,7 +55,7 @@ Asset Finder reads what is *inside* your files and lets you find any of it by de
 - **Python** — free, installed once (Section 5 explains).
 - **Free disk space:** about 8 GB — roughly 2.5 GB for the app and its search
   model, plus 3–4 GB for an AI model (more for larger models).
-- **Your content in one folder** — decks, PDFs and images, including sub-folders.
+- **Your content in one folder** — decks, PDFs, Word (`.docx`) and Excel (`.xlsx`) files and images, including sub-folders.
   It can be a synced OneDrive or Google Drive folder, as long as the files are
   downloaded to the computer. You do not reorganise anything.
 - **About an hour, once**, for setup and the first reading of your files. A very
@@ -244,7 +244,7 @@ Before you can search, the app reads your files once. This is called
 - Paste the path of your content folder into the box. To copy the path: open the
   folder in File Explorer, click the address bar at the top, and copy. Press Enter.
 - The app shows what it found, for example *"84 files, 2.3 GB found – 60 of them
-  are decks, PDFs or images the app can read."*
+  are decks, PDFs, Word or Excel files or images the app can read."*
 
 **Step 7.2 — Press "Process the files"**
 - A progress bar shows *"12 of 84 files done, 72 remaining"* and which file is

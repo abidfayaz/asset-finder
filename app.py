@@ -328,6 +328,18 @@ def render_preview(result: dict, query: str) -> None:
         )
         return
 
+    # Word and Excel: say when the match came from a picture inside the file,
+    # so the wording is not mistaken for text typed in the document.
+    if (result["type"] in ("document", "spreadsheet")
+            and result.get("source") == "picture"):
+        place = "SHEET" if result["type"] == "spreadsheet" else "DOCUMENT"
+        st.markdown(
+            f"<div style='font-size:0.68rem; letter-spacing:0.08em; "
+            f"color:#9aa0a6; margin-bottom:4px;'>"
+            f"FROM A PICTURE IN THIS {place}</div>",
+            unsafe_allow_html=True,
+        )
+
     # PDFs and anything else: the text on its own.
     st.markdown(
         f"<div style='font-size:0.94rem; line-height:1.55; "
@@ -594,7 +606,8 @@ def render_process_files_panel(files: dict, last_run) -> None:
 
     current = config.ASSETS_FOLDER
     typed = st.text_input(
-        "Paste the path of the folder that holds your decks, PDFs and images",
+        "Paste the path of the folder that holds your decks, PDFs, Word and "
+        "Excel files and images",
         value=str(current),
         help="In File Explorer, open the folder, click the address bar at the "
              "top, copy the path and paste it here.",
@@ -610,7 +623,8 @@ def render_process_files_panel(files: dict, last_run) -> None:
             # greet someone with an error they did not cause.
             st.info(
                 "**Start here:** paste the path of the folder that holds your "
-                "decks, PDFs and images into the box above, then press Enter."
+                "decks, PDFs, Word and Excel files and images into the box "
+                "above, then press Enter."
             )
         else:
             st.error(
@@ -623,12 +637,12 @@ def render_process_files_panel(files: dict, last_run) -> None:
     found = folder_summary(str(folder))
     st.markdown(
         f"**{found['files']:,} files, {_readable_size(found['bytes'])} found** "
-        f"- {found['readable']:,} of them are decks, PDFs or images the app "
-        f"can read."
+        f"- {found['readable']:,} of them are decks, PDFs, Word or Excel files "
+        f"or images the app can read."
     )
     if not found["readable"]:
-        st.warning("There are no decks, PDFs or images in this folder, so there "
-                   "is nothing to process.")
+        st.warning("There are no decks, PDFs, Word or Excel files or images in "
+                   "this folder, so there is nothing to process.")
         return
 
     replacing = bool(files) and not indexer.same_folder(folder, current)
@@ -824,7 +838,8 @@ with title_area:
 with settings_area:
     with st.container(key="settings_gear"):
         render_settings_panel()
-st.caption("Search your decks, PDFs and images by meaning - not by filename.")
+st.caption("Search your decks, PDFs, Word and Excel files and images by "
+           "meaning - not by filename.")
 
 tab_search, tab_log = st.tabs(["Search", "Processing log"])
 
@@ -1050,6 +1065,8 @@ with tab_log:
             "failed": "❌ Failed",
             "skipped": "⚪ Skipped",
         }
+        # Word and Excel pieces fall back to "pieces": a long section or
+        # sheet is cut into several, so "sections" or "sheets" would miscount.
         unit_words = {"deck": "slides", "pdf": "pages", "image": "description"}
 
         # Newest first: the file you added a minute ago should be at the top,

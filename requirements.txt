@@ -5,6 +5,7 @@ python-dotenv>=1.0            # reads your settings from .env
 # Reading your files and making them searchable
 python-pptx>=1.0              # reads PowerPoint decks
 pypdf>=5.0                    # reads PDFs
+python-docx>=1.1              # reads Word documents (.docx)
 pillow>=10.0                  # opens and shrinks images before they are read
 sentence-transformers>=3.0    # the search model, runs on your computer
 chromadb>=0.5                 # the local search database
@@ -13,5 +14,5 @@ chromadb>=0.5                 # the local search database
 requests>=2.31
 
 # YouTube videos listed in a public_links.xlsx spreadsheet
-openpyxl>=3.1                 # reads .xlsx without needing pandas
+openpyxl>=3.1                 # reads Excel files, including that spreadsheet
 youtube-transcript-api>=1.2   # fetches public captions, free, no key
