@@ -9,6 +9,9 @@ if none of those words are in the file name. Type the words printed on a thumbna
 and it finds the thumbnail. Type a topic and it finds the minute of the video
 where it is explained.
 
+**New here?** The **[Walkthrough & FAQ (PDF)](Asset_Finder_Walkthrough_and_FAQ.pdf)**
+shows every screen and answers the common questions in six pages.
+
 **It runs entirely on your own computer.** The AI model runs in a model runner you
 install yourself (Unsloth or Ollama). Your files are only ever read — never
 changed, moved, deleted or uploaded.

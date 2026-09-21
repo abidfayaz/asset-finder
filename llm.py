@@ -39,8 +39,11 @@ SYSTEM_PROMPT = (
     "For each result, write ONE complete sentence of 10 to 20 words, in plain "
     "language a non-technical person understands. Always a full sentence, "
     "never a fragment, and always ending in a full stop. "
-    "Say what the slide or page is actually about and how that relates to the "
-    "search. "
+    "Say what the result is actually about and how that relates to the "
+    "search. Each result has a Kind line saying what it is - a slide, a PDF "
+    "page, a section of a Word document, a sheet of an Excel workbook, a "
+    "picture or a video excerpt. Describe it as exactly that kind: never "
+    "call a Word document or a picture a slide. "
     "Only describe what is in the provided text - never invent details, and "
     "never guess what else the file might contain. "
     "If the text has little to do with the search, say so honestly. "
@@ -52,6 +55,26 @@ SYSTEM_PROMPT = (
     "dimension tables.' "
     "Bad example: 'Mentions star schema directly.'"
 )
+
+
+# What each kind of result is, in words the model can repeat. Without this a
+# small model calls everything a "slide", as in the example sentence above.
+_KINDS = {
+    "deck": "a slide in a PowerPoint deck",
+    "pdf": "a page of a PDF",
+    "document": "a section of a Word document",
+    "spreadsheet": "a sheet of an Excel workbook",
+    "image": "an image",
+    "youtube": "an excerpt of a YouTube video",
+}
+
+
+def _kind(result: dict) -> str:
+    kind = _KINDS.get(result.get("type"), "a file")
+    if result.get("source") == "picture":
+        return f"a picture inside {kind}"
+    return kind
+
 
 # A different job when NOTHING matched well and we are showing the closest few.
 # Here the person has already been told nothing matched, so repeating "this is
@@ -176,6 +199,7 @@ def why_it_matched(query: str, results: list[dict], weak: bool = False) -> list[
         blocks.append(
             f"RESULT {number}\n"
             f"File: {result['file_name']} {where}\n"
+            f"Kind: {_kind(result)}\n"
             f"Text: {result['snippet']}"
         )
 

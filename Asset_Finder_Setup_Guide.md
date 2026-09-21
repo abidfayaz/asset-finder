@@ -6,6 +6,10 @@ You do not need to be a programmer to follow this. Every step is spelled out, an
 nothing needs to be typed into a command window except one line if you choose
 Ollama. If a step feels unclear, that is a fault of the guide, not you.
 
+Want to see the app before installing? The
+[Walkthrough & FAQ (PDF)](Asset_Finder_Walkthrough_and_FAQ.pdf) shows every screen
+and answers the common questions.
+
 ---
 
 ## 1. What this is, and what you will end up with
@@ -15,7 +19,8 @@ YouTube videos — by **meaning**, in plain words, instead of by file name.
 
 For example, you can type *"the slide that explains star schema"* and it finds that
 exact slide, even if the file is named something unhelpful. It reads inside your
-files, including the words printed inside images and the words spoken in videos.
+files, including the words printed inside images, screenshots pasted into slides,
+Word documents and Excel sheets, and the words spoken in videos.
 
 Three promises:
 
@@ -55,9 +60,25 @@ Asset Finder reads what is *inside* your files and lets you find any of it by de
 - **Python** — free, installed once (Section 5 explains).
 - **Free disk space:** about 8 GB — roughly 2.5 GB for the app and its search
   model, plus 3–4 GB for an AI model (more for larger models).
-- **Your content in one folder** — decks, PDFs, Word (`.docx`) and Excel (`.xlsx`) files and images, including sub-folders.
-  It can be a synced OneDrive or Google Drive folder, as long as the files are
-  downloaded to the computer. You do not reorganise anything.
+- **Your content in one folder**, including sub-folders. It can be a synced
+  OneDrive or Google Drive folder, as long as the files are downloaded to the
+  computer. You do not reorganise anything. The app reads:
+  - **PowerPoint decks (`.pptx`)** — the text on every slide, and the pictures and
+    screenshots on them.
+  - **PDFs (`.pdf`)** — the text on every page.
+  - **Word documents (`.docx`)** — the text, including tables, and any screenshots
+    or pictures pasted in. Results point to the heading a match sits under, as
+    Word files have no fixed pages.
+  - **Excel workbooks (`.xlsx`)** — sheet names and cell text, and any pictures
+    placed on a sheet. **Works best for sheets that hold words** (lists, notes,
+    trackers); a big table of numbers is found by its sheet name and column
+    headings, not by the figures.
+  - **Images (`.png`, `.jpg`)** — what the picture shows and any words in it.
+  - **YouTube videos** listed in a spreadsheet (Step 7.4).
+
+  **Older `.doc` and `.xls` files are not read** — open them in Word or Excel and
+  save them as `.docx` / `.xlsx` first. Anything else (zip files, videos on disk and
+  so on) is listed as *Skipped*.
 - **About an hour, once**, for setup and the first reading of your files. A very
   large library takes longer the first time; after that, only new files are read.
 
@@ -259,7 +280,7 @@ Before you can search, the app reads your files once. This is called
 
 **Step 7.3 — What to expect**
 - Reading pictures is the slow part: every image, and every picture inside a
-  slide, is read by your AI model. A large library can take several hours the
+  slide, Word document or Excel sheet, is read by your AI model. A large library can take several hours the
   first time. That is normal, and only happens once.
 - The Processing log lists every file with what happened to it. **Skipped** means a
   file type the app does not handle (such as a zip file) — nothing is wrong.
